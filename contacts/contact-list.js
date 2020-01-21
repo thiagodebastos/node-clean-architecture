@@ -17,8 +17,29 @@ function makeContactList({ database }) {
     return await contacts;
   }
   async function add() {}
-  async function findById() {}
-  async function findByEmail() {}
+
+  /**
+   * Use the database to find a result by id
+   * @param {Object} param
+   * @param {string|number} param.id
+   */
+  async function findById({ id }) {
+    const db = database;
+    const contact = await db("contacts").where({ id });
+    return contact;
+  }
+
+  /**
+   * Use the database to find a result by email
+   * @param {Object} param
+   * @param {string} param.email
+   */
+  async function findByEmail({ email }) {
+    const db = await database;
+    const contact = await db("contacts").where({ email });
+    return contact;
+  }
+
   async function update() {}
 
   return Object.freeze({ add, findByEmail, findById, getItems, update });

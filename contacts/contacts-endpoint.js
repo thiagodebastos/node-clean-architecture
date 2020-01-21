@@ -21,7 +21,19 @@ function makeContactsEndpointHandler({ contactList }) {
   };
 
   async function getContacts(httpRequest) {
-    const result = await contactList.getItems();
+    const { id } = httpRequest.pathParams || {};
+    const { email } = httpRequest.queryParams || {};
+
+    let result;
+
+    if (email) {
+      result = await contactList.findByEmail({ email });
+    } else if (id) {
+      result = await contactList.findById({ id });
+    } else {
+      result = await contactList.getItems();
+    }
+
     return {
       headers: {
         "Content-Type": "application/json"

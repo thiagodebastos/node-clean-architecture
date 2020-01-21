@@ -13,7 +13,7 @@ function adaptRequest(req) {
     path: req.path,
     method: req.method,
     pathParams: req.params,
-    queryParams: req.params,
+    queryParams: req.query,
     body: req.body
   });
 }
