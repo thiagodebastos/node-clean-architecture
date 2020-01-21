@@ -13,7 +13,7 @@ const { requiredParam } = require("../helpers/required-param");
 function makeContactList({ database }) {
   async function getItems() {
     const db = database;
-    const contacts = await db("user");
+    const contacts = await db("contacts");
     return await contacts;
   }
   async function add() {}

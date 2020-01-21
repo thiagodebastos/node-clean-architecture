@@ -30,4 +30,4 @@ const knexConfig = Object.freeze({
   }
 });
 
-module.exports = { knexConfig };
+module.exports = knexConfig;

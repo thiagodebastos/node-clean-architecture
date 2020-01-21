@@ -1,5 +1,5 @@
 {
-  "name": "node-auth-clean",
+  "name": "node-clean-architecture",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
@@ -14,18 +14,6 @@
   "jest": {
     "verbose": true,
     "testRegex": ".spec.js"
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/env",
-        {
-          "targets": {
-            "node": "12.14.1"
-          }
-        }
-      ]
-    ]
   },
   "dependencies": {
     "express": "^4.17.1",
