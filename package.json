@@ -1,0 +1,46 @@
+{
+  "name": "node-auth-clean",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "dev": "NODE_ENV=development nodemon --inspect index",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=production node index.js",
+    "migrate": "knex migrate:latest",
+    "unmigrate": "knex migrate:rollback",
+    "seed": "knex seed:run"
+  },
+  "jest": {
+    "verbose": true,
+    "testRegex": ".spec.js"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/env",
+        {
+          "targets": {
+            "node": "12.14.1"
+          }
+        }
+      ]
+    ]
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "helmet": "^3.21.2",
+    "knex": "^0.20.8",
+    "pg": "^7.17.1"
+  },
+  "devDependencies": {
+    "@types/knex": "^0.16.1",
+    "@types/express": "^4.17.2",
+    "@types/node": "^13.1.8",
+    "babel-core": "^6.26.3",
+    "babel-jest": "^24.9.0",
+    "dotenv": "^8.2.0",
+    "jest": "^24.9.0",
+    "nodemon": "^2.0.2"
+  }
+}
