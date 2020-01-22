@@ -1,5 +1,10 @@
-const { RequiredParameterError } = require("../helpers/errors");
-// const { makeContact } = require("./contact");
+const {
+  RequiredParameterError,
+  UniqueConstraintError,
+  InvalidPropertyError
+} = require("../helpers/errors");
+const { makeContact } = require("./contact");
+const { makeHttpError } = require("../helpers/http-error");
 
 /**
  * Takes an instance of the database specific for contactList
@@ -13,10 +18,13 @@ function makeContactsEndpointHandler({ contactList }) {
       case "GET":
         return getContacts(httpRequest);
       case "POST":
-        break;
+        return postContact(httpRequest);
 
       default:
-        break;
+        return makeHttpError({
+          statusCode: 405,
+          errorMessage: `${httpRequest.method} method not allowed.`
+        });
     }
   };
 
@@ -41,6 +49,52 @@ function makeContactsEndpointHandler({ contactList }) {
       statusCode: 200,
       data: JSON.stringify(result)
     };
+  }
+
+  async function postContact(httpRequest) {
+    let contactInfo = httpRequest.body;
+    if (!contactInfo) {
+      return makeHttpError({
+        statusCode: 400,
+        errorMessage: "Bad request. No POST body."
+      });
+    }
+    // if req.body is string, try to parse string as JSON
+    if (typeof httpRequest.body === "string") {
+      try {
+        contactInfo = JSON.parse(contactInfo);
+      } catch {
+        return makeHttpError({
+          statusCode: 400,
+          errorMessage: "Bad request. POST body must be valid JSON."
+        });
+      }
+    }
+
+    try {
+      // pass to contact factory which handles contact business logic
+      const contact = makeContact(contactInfo);
+      // pass transformed contact object to contactList repository
+      const result = await contactList.add({ contact });
+      return {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        statusCode: 201, // Created https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/201
+        data: JSON.stringify(result)
+      };
+    } catch (error) {
+      return makeHttpError({
+        errorMessage: error.message,
+        statusCode:
+          error instanceof UniqueConstraintError
+            ? 409 // Conflict https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
+            : error instanceof InvalidPropertyError ||
+              error instanceof RequiredParameterError
+            ? 400 // Bad Request https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+            : 500 // Internal Server Error https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+      });
+    }
   }
 }
 

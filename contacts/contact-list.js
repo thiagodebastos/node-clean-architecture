@@ -1,48 +1,50 @@
 /**
- * Encapsulate interactions with the database
- */
-
-const { makeContact } = require("./contact");
-const { requiredParam } = require("../helpers/required-param");
-
-/**
- * makeContactList allows for injection of a database object
+ * Encapsulates interactions with the database
+ * Implementation of the repository pattern
  * @param {Object} obj
- * @param {import('knex')} obj.database - The  object
+ * @param {import('knex')} obj.database - An injectible object representing the database
  */
 function makeContactList({ database }) {
+  return Object.freeze({
+    add,
+    findByEmail,
+    findById,
+    getItems,
+    update
+  });
+
   async function getItems() {
     const db = database;
     const contacts = await db("contacts");
-    return await contacts;
+    return contacts;
   }
-  async function add() {}
 
-  /**
-   * Use the database to find a result by id
-   * @param {Object} param
-   * @param {string|number} param.id
-   */
   async function findById({ id }) {
     const db = database;
     const contact = await db("contacts").where({ id });
     return contact;
   }
 
-  /**
-   * Use the database to find a result by email
-   * @param {Object} param
-   * @param {string} param.email
-   */
   async function findByEmail({ email }) {
     const db = await database;
     const contact = await db("contacts").where({ email });
     return contact;
   }
 
-  async function update() {}
+  async function add({ contact }) {
+    const db = await database;
+    const id = await db("contacts")
+      .insert({ ...contact })
+      .returning("id")
+      .then(([id]) => id);
 
-  return Object.freeze({ add, findByEmail, findById, getItems, update });
+    const result = await findById({ id });
+
+    return result;
+  }
+
+  async function remove() {}
+  async function update() {}
 }
 
 module.exports = { makeContactList };

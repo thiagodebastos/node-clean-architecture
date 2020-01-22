@@ -3,7 +3,7 @@
  */
 exports.up = function(knex) {
   return knex.schema.createTable("contacts", tbl => {
-    tbl.increments("id").primary();
+    tbl.increments().primary();
     tbl.text("first_name", 30);
     tbl.text("last_name", 30);
     tbl.text("email", 30).notNullable();
