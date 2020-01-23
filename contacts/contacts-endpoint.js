@@ -6,8 +6,13 @@ const {
 const { makeContact } = require("./contact");
 const { makeHttpError } = require("../helpers/http-error");
 
+// TODO: update param  makeContactsEndpointHandler descriptions
 /**
- * Takes an instance of the database specific for contactList
+ * Factory function that creates a function that can handle an HTTP request.
+ * This is so one can inject a contactList used to manipulate contacts in the database.
+ * This should be independent of any framework.
+ * @NOTE: RORO pattern: https://www.freecodecamp.org/news/elegant-patterns-in-modern-javascript-roro-be01e7669cbd/
+ * @NOTE: Ice Factory pattern: https://www.freecodecamp.org/news/elegant-patterns-in-modern-javascript-ice-factory-4161859a0eee/
  * @param {Object} obj
  * @param {Object} obj.contactList - an instance of the database returning contacts
  * @param {function} obj.contactList.getItems - returns items from db adaptor(?)
@@ -108,15 +113,33 @@ function makeContactsEndpointHandler({ contactList }) {
 
   async function removeContact(httpRequest) {
     const { id } = httpRequest.pathParams || {};
-    const result = await contactList.remove({ id });
+    let result;
+    try {
+      result = await contactList.remove({ id });
 
-    return {
-      headers: {
-        "Content-Type": "application/json"
-      },
-      statusCode: 200,
-      data: JSON.stringify(result)
-    };
+      if (result === 0) {
+        throw new InvalidPropertyError(`Contact with id ${id} does not exist.`);
+      }
+
+      return {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        statusCode: 200,
+        data: JSON.stringify(result)
+      };
+    } catch (error) {
+      return makeHttpError({
+        errorMessage: error.message,
+        statusCode:
+          error instanceof UniqueConstraintError
+            ? 409 // Conflict https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
+            : error instanceof InvalidPropertyError ||
+              error instanceof RequiredParameterError
+            ? 400 // Bad Request https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+            : 500 // Internal Server Error https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+      });
+    }
   }
 
   async function updateContact(httpRequest) {
