@@ -1,11 +1,5 @@
-// Express will send messages via http.
-// The responsibility of our app is to then interpret these messages and
-// formulate responses
-
-// Capture data from Express request to be processed by this application
-
 /**
- *
+ * Captures data from Express request to be processed/interpreted by this application
  * @param {import('express').Request} req - Express Request object
  */
 function adaptRequest(req) {
