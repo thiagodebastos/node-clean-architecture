@@ -15,6 +15,7 @@ const { makeHttpError } = require("../helpers/http-error");
  * @param {function} obj.contactList.findByEmail - returns items from db adaptor(?)
  * @param {function} obj.contactList.add - returns items from db adaptor(?)
  * @param {function} obj.contactList.remove - returns items from db adaptor(?)
+ * @param {function} obj.contactList.update - returns items from db adaptor(?)
  */
 function makeContactsEndpointHandler({ contactList }) {
   return async function handle(httpRequest) {
@@ -25,6 +26,8 @@ function makeContactsEndpointHandler({ contactList }) {
         return postContact(httpRequest);
       case "DELETE":
         return removeContact(httpRequest);
+      case "PATCH":
+        return updateContact(httpRequest);
 
       default:
         return makeHttpError({
@@ -112,8 +115,34 @@ function makeContactsEndpointHandler({ contactList }) {
         "Content-Type": "application/json"
       },
       statusCode: 200,
-      date: JSON.stringify(result)
+      data: JSON.stringify(result)
     };
+  }
+
+  async function updateContact(httpRequest) {
+    const contact = httpRequest.body;
+
+    try {
+      const result = await contactList.update({ contact });
+      return {
+        headers: {
+          "Content-Type": "application/json"
+        },
+        statusCode: 200,
+        data: JSON.stringify(result)
+      };
+    } catch (error) {
+      return makeHttpError({
+        errorMessage: error.message,
+        statusCode:
+          error instanceof UniqueConstraintError
+            ? 409 // Conflict https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409
+            : error instanceof InvalidPropertyError ||
+              error instanceof RequiredParameterError
+            ? 400 // Bad Request https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400
+            : 500 // Internal Server Error https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
+      });
+    }
   }
 }
 

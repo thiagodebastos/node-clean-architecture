@@ -1,3 +1,8 @@
+const {
+  UniqueConstraintError,
+  RequiredParameterError,
+  InvalidPropertyError
+} = require("../helpers/errors");
 /**
  * Encapsulates interactions with the database
  * Implementation of the repository pattern
@@ -27,13 +32,13 @@ function makeContactList({ database }) {
   }
 
   async function findByEmail({ email }) {
-    const db = await database;
+    const db = database;
     const contact = await db("contacts").where({ email });
     return contact;
   }
 
   async function add({ contact }) {
-    const db = await database;
+    const db = database;
     const id = await db("contacts")
       .insert({ ...contact })
       .returning("id")
@@ -45,17 +50,42 @@ function makeContactList({ database }) {
   }
 
   async function remove({ id }) {
-    const db = await database;
+    const db = database;
     const contactToDelete = await db("contacts").where({ id });
-    if (!contactToDelete) {
-      return new Error(`user with id ${id} does not exist`);
-    }
+
     await contactToDelete.del();
 
     return contactToDelete;
   }
 
-  async function update() {}
+  async function update({ contact }) {
+    const db = database;
+
+    const { id, ...updatedContactInfo } = contact;
+
+    if (!id) {
+      throw new RequiredParameterError("id");
+    }
+
+    const query = await db("contacts")
+      .where({ id })
+      .update({ ...updatedContactInfo }, ["id"])
+      .catch(error => {
+        if (error.code === "23505") {
+          throw new UniqueConstraintError(error);
+        }
+        if (error.code === "42703") {
+          throw new InvalidPropertyError(error.message);
+        }
+        return error;
+      });
+
+    if (query.length === 0) {
+      throw new InvalidPropertyError(`Contact with id ${id} does not exist`);
+    }
+
+    return query;
+  }
 }
 
 module.exports = { makeContactList };
