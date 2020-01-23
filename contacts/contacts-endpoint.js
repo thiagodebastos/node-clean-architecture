@@ -11,6 +11,10 @@ const { makeHttpError } = require("../helpers/http-error");
  * @param {Object} obj
  * @param {Object} obj.contactList - an instance of the database returning contacts
  * @param {function} obj.contactList.getItems - returns items from db adaptor(?)
+ * @param {function} obj.contactList.findById - returns items from db adaptor(?)
+ * @param {function} obj.contactList.findByEmail - returns items from db adaptor(?)
+ * @param {function} obj.contactList.add - returns items from db adaptor(?)
+ * @param {function} obj.contactList.remove - returns items from db adaptor(?)
  */
 function makeContactsEndpointHandler({ contactList }) {
   return async function handle(httpRequest) {
@@ -19,6 +23,8 @@ function makeContactsEndpointHandler({ contactList }) {
         return getContacts(httpRequest);
       case "POST":
         return postContact(httpRequest);
+      case "DELETE":
+        return removeContact(httpRequest);
 
       default:
         return makeHttpError({
@@ -95,6 +101,19 @@ function makeContactsEndpointHandler({ contactList }) {
             : 500 // Internal Server Error https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500
       });
     }
+  }
+
+  async function removeContact(httpRequest) {
+    const { id } = httpRequest.pathParams || {};
+    const result = await contactList.remove({ id });
+
+    return {
+      headers: {
+        "Content-Type": "application/json"
+      },
+      statusCode: 200,
+      date: JSON.stringify(result)
+    };
   }
 }
 

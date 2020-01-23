@@ -10,7 +10,8 @@ function makeContactList({ database }) {
     findByEmail,
     findById,
     getItems,
-    update
+    update,
+    remove
   });
 
   async function getItems() {
@@ -43,7 +44,17 @@ function makeContactList({ database }) {
     return result;
   }
 
-  async function remove() {}
+  async function remove({ id }) {
+    const db = await database;
+    const contactToDelete = await db("contacts").where({ id });
+    if (!contactToDelete) {
+      return new Error(`user with id ${id} does not exist`);
+    }
+    await contactToDelete.del();
+
+    return contactToDelete;
+  }
+
   async function update() {}
 }
 
