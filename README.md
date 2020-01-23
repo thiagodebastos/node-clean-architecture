@@ -15,6 +15,23 @@
 - [postgresql](https://www.postgresql.org/)
 - [knex](http://knexjs.org/) query builder
 
+## Structure
+
+```bash
+├── config                          # env vars etc
+├── contacts                        # contacts module
+│   ├── contact-list.js             # contact repository
+│   ├── contact.js                  # contact factory
+│   ├── contacts-endpoint.js        # contacts service
+│   └── index.js
+├── data                            # database migrations and seed
+├── db                              # database adapter
+├── helpers                         # helper/utility methods
+├── README.md
+├── index.js                        # server entry point
+├── knexfile.js
+```
+
 ## Resources
 
 - 📺[Designing a clean REST API with Node.js (Express + Mongo)
