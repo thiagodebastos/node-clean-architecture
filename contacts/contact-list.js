@@ -42,7 +42,18 @@ function makeContactList({ database }) {
     const id = await db("contacts")
       .insert({ ...contact })
       .returning("id")
-      .then(([id]) => id);
+      .then(([id]) => id)
+      .catch(error => {
+        // TODO: review knex-specific error-code
+        if (error.code === "23505") {
+          throw new UniqueConstraintError(error);
+        }
+        // TODO: review knex-specific error-code
+        if (error.code === "42703") {
+          throw new InvalidPropertyError(error.message);
+        }
+        return error;
+      });
 
     const result = await findById({ id });
 
@@ -51,9 +62,9 @@ function makeContactList({ database }) {
 
   async function remove({ id }) {
     const db = database;
-    const contactToDelete = await db("contacts").where({ id });
-
-    await contactToDelete.del();
+    const contactToDelete = await db("contacts")
+      .del()
+      .where({ id });
 
     return contactToDelete;
   }
@@ -71,9 +82,11 @@ function makeContactList({ database }) {
       .where({ id })
       .update({ ...updatedContactInfo }, ["id"])
       .catch(error => {
+        // TODO: review knex-specific error-code
         if (error.code === "23505") {
           throw new UniqueConstraintError(error);
         }
+        // TODO: review knex-specific error-code
         if (error.code === "42703") {
           throw new InvalidPropertyError(error.message);
         }
