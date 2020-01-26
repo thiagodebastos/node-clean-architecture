@@ -57,3 +57,7 @@
 
 - 📚[Learning JavaScript Design Patterns
   ](https://addyosmani.com/resources/essentialjsdesignpatterns/book/)
+  
+- 📚[Clean Architecture for the rest of us](https://pusher.com/tutorials/clean-architecture-introduction)
+
+- 📚[Clean Node.js Architecture | Enterprise Node.js + TypeScript](https://khalilstemmler.com/articles/enterprise-typescript-nodejs/clean-nodejs-architecture/)
